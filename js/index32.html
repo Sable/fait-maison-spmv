@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <script src="my.js"></script>
+    <script src="spmv32.js"></script>
+    <script type='text/javascript'>
+      //var result = JSON.stringify(myBundle.myFunc());
+      spmv(function(){
+        var result = JSON.stringify({'browser':browser, 'output_file':output_file, 'file':filename, 'N': N, 'nnz':anz, 'coo':coo_mflops, 'coo_sum':coo_sum, 'csr':csr_mflops, 'csr_sum':csr_sum, 'dia':dia_mflops, 'dia_sum':dia_sum, 'ell':ell_mflops, 'ell_sum':ell_sum, 'coo_flops':coo_flops, 'csr_flops':csr_flops, 'dia_flops':dia_flops, 'ell_flops':ell_flops});
+        console.log("inside fn");
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "/result/" + result, false);
+        xmlhttp.send();
+      });
+    </script>
+
+  <head>
+</html>

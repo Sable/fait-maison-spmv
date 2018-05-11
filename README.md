@@ -34,7 +34,7 @@ where <format_index> is 1 for COO, 2 for CSR, 3 for DIA and 4 for ELL
 where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
   
 
-## Run JavaScript implementation
+## Run WebAssembly implementation
 
   ### single-precision
 

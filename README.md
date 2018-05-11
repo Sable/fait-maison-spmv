@@ -7,6 +7,7 @@ To have a fair comparison with JavaScript and WebAssembly which are single threa
 The input matrix is required to be in Matrix Market format (.mtx). Some real-life examples of sparse matrices in this external format 
 can be obtained from The SuiteSparse Matrix Collection (formerly the University of Florida Sparse Matrix Collection) at https://sparse.tamu.edu
 
+
 ## Run C implementation
 
   ### single-precision
@@ -21,6 +22,7 @@ can be obtained from The SuiteSparse Matrix Collection (formerly the University 
     
 where <format_index> is 1 for COO, 2 for CSR, 3 for DIA and 4 for ELL
 
+
 ## Run JavaScript implementation
   
   ### single-precision
@@ -32,7 +34,7 @@ where <format_index> is 1 for COO, 2 for CSR, 3 for DIA and 4 for ELL
     ./run.py -b <browser> -p double <matrix_market_input_file_path>
     
 where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
-  
+
 
 ## Run WebAssembly implementation
 
@@ -45,3 +47,14 @@ where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
     ./index.js -b <browser> -p double -f <matrix_market_input_file_path>
 
 where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
+
+
+## Experimental data
+
+Please follow the Github link for the recent experimental data and scripts :
+https://github.com/Sable/manlang18-spmv
+
+
+## Feedback
+
+Please contact [Prabhjot](mailto:prabhjot.sandhu@mail.mcgill.ca).

@@ -68,18 +68,18 @@ def main(argv):
   if precision == 1:
     url = "http://localhost:8080/static/index64.html"
   browser_path = r'google-chrome'
-  #browser_path = r'/home/sable/psandh3/Documents/chrome63/opt/google/chrome/chrome'
+  #browser_path = r'/mnt/local/cheetah/chrome66/opt/google/chrome/chrome'
   browser_opts = ' '
   if browser == 1:
     browser_path = r'firefox'
-    #browser_path = r'/home/sable/psandh3/Documents/firefox/firefox'
+    #browser_path = r'/mnt/local/cheetah/firefox59/firefox'
   #browser_opts = ' '.join(["--no-sandbox", "--incognito", "--js-flags=\"--print-opt-code --print-opt-code-filter=spmv_coo --code-comments\""])
   #browser_opts = ' '.join(["--js-flags=\"--max-new-space-size=8192\""])
   #browser_opts = ' '.join(["--private"])
   invocation = browser_path + " " + browser_opts + " " + url 
   print invocation
   p = subprocess.Popen(invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-  print p.communicate()[0]
+  p.communicate()
   httpd.terminate()
   files = os.path.splitext(basename)[0]
   for i in range(num):

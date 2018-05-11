@@ -191,9 +191,12 @@ function spmv_coo(coo_row, coo_col, coo_val, N, nz, x, y){
   
 var coo_mflops = -1, csr_mflops = -1, dia_mflops = -1, ell_mflops = -1;
 var coo_sum=-1, csr_sum=-1, dia_sum=-1, ell_sum=-1;
+var coo_sd=-1, csr_sd=-1, dia_sd=-1, ell_sd=-1;
 var anz = 0;
 var coo_flops = [], csr_flops = [], dia_flops = [], ell_flops = [];
 var N;
+var variance;
+var inside = 0, inside_max = 100000;
 function spmv(callback){
   var files = new Array(num);
   var fileno = 0;
@@ -340,6 +343,12 @@ function spmv(callback){
             x[i] = i;
             csr_row[i] = 0;
           } 
+          if(anz > 1000000) inside_max = 1;
+          else if (anz > 100000) inside_max = 10;
+          else if (anz > 50000) inside_max = 50;
+          else if(anz > 10000) inside_max = 100;
+          else if(anz > 2000) inside_max = 1000;
+          else if(anz > 100) inside_max = 10000;
           for(var i = 0; i < 10; i++){
             y.fill(0.0);
             t1 = performance.now();
@@ -348,16 +357,22 @@ function spmv(callback){
             coo_flops[i] = 1/Math.pow(10,6) * 2 * anz /((t2 - t1)/1000);
             console.log(coo_flops[i], t2-t1);
           }
-          for(var i = 0; i < 100; i++){
+          for(var i = 0; i < 10; i++){
             y.fill(0.0);
             t1 = performance.now();
-            spmv_coo(coo_row, coo_col, coo_val, N, anz, x, y);
+            for(inside = 0; inside < inside_max; inside++)
+              spmv_coo(coo_row, coo_col, coo_val, N, anz, x, y);
             t2 = performance.now();
-            coo_flops[i+10] = 1/Math.pow(10,6) * 2 * anz /((t2 - t1)/1000);
+            coo_flops[i+10] = 1/Math.pow(10,6) * 2 * anz * inside/((t2 - t1)/1000);
             tt = tt + t2 - t1;
           }
           tt = tt/1000; 
-          coo_mflops = 1/Math.pow(10,6) * 2 * anz * 100 / tt;
+          coo_mflops = 1/Math.pow(10,6) * 2 * anz * 10 * inside/ tt;
+          variance = 0;
+          for(var i = 0; i < 10; i++)
+            variance += (coo_mflops - coo_flops[i+10]) * (coo_mflops - coo_flops[i+10]);
+          variance /= 10;
+          coo_sd = Math.sqrt(variance);
           coo_sum = parseInt(fletcher_sum(y));
           console.log(parseInt(fletcher_sum(y)));
           coo_csr(coo_row, coo_col, coo_val, N, anz, csr_row, csr_col, csr_val);
@@ -370,16 +385,22 @@ function spmv(callback){
             console.log(csr_flops[i], t2-t1);
           }
           tt = 0.0
-          for(var i = 0; i < 100; i++){
+          for(var i = 0; i < 10; i++){
             csr_y.fill(0.0);
             t1 = performance.now();
-            spmv_csr(csr_row, csr_col, csr_val, N, anz, x, csr_y);
+            for(inside =0; inside < inside_max; inside++)
+              spmv_csr(csr_row, csr_col, csr_val, N, anz, x, csr_y);
             t2 = performance.now();
-            csr_flops[i+10] = 1/Math.pow(10,6) * 2 * anz /((t2 - t1)/1000);
+            csr_flops[i+10] = 1/Math.pow(10,6) * 2 * anz * inside/((t2 - t1)/1000);
             tt = tt + t2 - t1;
           }
           tt = tt/1000; 
-          csr_mflops = 1/Math.pow(10,6) * 2 * anz * 100 / tt;
+          csr_mflops = 1/Math.pow(10,6) * 2 * anz * 10 * inside/ tt;
+          variance = 0;
+          for(var i = 0; i < 10; i++)
+            variance += (csr_mflops - csr_flops[i+10]) * (csr_mflops - csr_flops[i+10]);
+          variance /= 10;
+          csr_sd = Math.sqrt(variance);
           csr_sum = parseInt(fletcher_sum(csr_y));
           console.log(parseInt(fletcher_sum(csr_y)));
   
@@ -399,16 +420,22 @@ function spmv(callback){
               console.log(dia_flops[i], t2-t1);
             }
             tt = 0.0
-            for(var i = 0; i < 100; i++){
+            for(var i = 0; i < 10; i++){
               dia_y.fill(0.0);
               t1 = performance.now();
-              spmv_dia(dia_data, offset, N, nd, x, dia_y, stride);
+              for(inside =0; inside < inside_max; inside++)
+                spmv_dia(dia_data, offset, N, nd, x, dia_y, stride);
               t2 = performance.now();
-              dia_flops[i+10] = 1/Math.pow(10,6) * 2 * anz /((t2 - t1)/1000);
+              dia_flops[i+10] = 1/Math.pow(10,6) * 2 * anz * inside/((t2 - t1)/1000);
               tt = tt + t2 - t1;
             }
             tt = tt/1000; 
-            dia_mflops = 1/Math.pow(10,6) * 2 * anz * 100 / tt;
+            dia_mflops = 1/Math.pow(10,6) * 2 * anz * 10 * inside / tt;
+            variance = 0;
+            for(var i = 0; i < 10; i++)
+              variance += (dia_mflops - dia_flops[i+10]) * (dia_mflops - dia_flops[i+10]);
+            variance /= 10;
+            dia_sd = Math.sqrt(variance);
             dia_sum = parseInt(fletcher_sum(dia_y));
             console.log(parseInt(fletcher_sum(dia_y)));
           }
@@ -428,16 +455,22 @@ function spmv(callback){
               console.log(ell_flops[i], t2-t1);
             }
             tt = 0.0
-            for(var i = 0; i < 100; i++){
+            for(var i = 0; i < 10; i++){
               ell_y.fill(0.0);
               t1 = performance.now();
-              spmv_ell(ell_data, indices, N, nc, x, ell_y);
+              for(inside =0; inside < inside_max; inside++)
+                spmv_ell(ell_data, indices, N, nc, x, ell_y);
               t2 = performance.now();
-              ell_flops[i+10] = 1/Math.pow(10,6) * 2 * anz /((t2 - t1)/1000);
+              ell_flops[i+10] = 1/Math.pow(10,6) * 2 * anz * inside/((t2 - t1)/1000);
               tt = tt + t2 - t1;
             }
             tt = tt/1000; 
-            ell_mflops = 1/Math.pow(10,6) * 2 * anz * 100 / tt;
+            ell_mflops = 1/Math.pow(10,6) * 2 * anz * 10 * inside / tt;
+            variance = 0;
+            for(var i = 0; i < 10; i++)
+              variance += (ell_mflops - ell_flops[i+10]) * (ell_mflops - ell_flops[i+10]);
+            variance /= 10;
+            ell_sd = Math.sqrt(variance);
             ell_sum = parseInt(fletcher_sum(ell_y));
             console.log(parseInt(fletcher_sum(ell_y)));
           }

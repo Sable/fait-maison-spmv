@@ -6,11 +6,12 @@
     <script type='text/javascript'>
       //var result = JSON.stringify(myBundle.myFunc());
       spmv(function(){
-        var result = JSON.stringify({'browser':browser, 'output_file':output_file, 'file':filename, 'N': N, 'nnz':anz, 'coo':coo_mflops, 'coo_sum':coo_sum, 'csr':csr_mflops, 'csr_sum':csr_sum, 'dia':dia_mflops, 'dia_sum':dia_sum, 'ell':ell_mflops, 'ell_sum':ell_sum, 'coo_flops':coo_flops, 'csr_flops':csr_flops, 'dia_flops':dia_flops, 'ell_flops':ell_flops});
+        var result = JSON.stringify({'browser':browser, 'output_file':output_file, 'file':filename, 'N': N, 'nnz':anz, 'coo_sd':coo_sd, 'coo':coo_mflops, 'coo_sum':coo_sum, 'csr_sd':csr_sd, 'csr':csr_mflops, 'csr_sum':csr_sum, 'dia_sd':dia_sd, 'dia':dia_mflops, 'dia_sum':dia_sum, 'ell_sd':ell_sd, 'ell':ell_mflops, 'ell_sum':ell_sum});
         console.log("inside fn");
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "/result/" + result, false);
         xmlhttp.send();
+        window.close()
       });
     </script>
 

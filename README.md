@@ -51,8 +51,7 @@ where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
 
 ## Experimental data
 
-Please follow the Github link for the recent experimental data and scripts :
-https://github.com/Sable/manlang18-spmv
+Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the recent experimental data and scripts.
 
 
 ## Feedback

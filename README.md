@@ -3,10 +3,13 @@ Sparse matrix-vector multiplication implementations for C and two web languages 
 Our implementations follow closely to conventional implementations of SpMV that target cache-based superscalar uniprocessor machines.
 To have a fair comparison with JavaScript and WebAssembly which are single threaded, we have focused on uniprocessor sequential SpMV.
 
+## Experiments
+
+Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the recent experimental data and scripts.
+
 ## Input Matrices
 The input matrix is required to be in Matrix Market format (.mtx). Some real-life examples of sparse matrices in this external format 
 can be obtained from The SuiteSparse Matrix Collection (formerly the University of Florida Sparse Matrix Collection) at https://sparse.tamu.edu
-
 
 ## Run C implementation
 
@@ -47,11 +50,6 @@ where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
     ./index.js -b <browser> -p double -f <matrix_market_input_file_path>
 
 where \<browser\> is chrome for Google Chrome and firefox for Mozilla Firefox
-
-
-## Experimental data
-
-Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the recent experimental data and scripts.
 
 
 ## Feedback

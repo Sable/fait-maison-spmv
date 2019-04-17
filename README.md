@@ -15,15 +15,15 @@ can be obtained from The SuiteSparse Matrix Collection (formerly the University 
 
   ### single-precision
 
-    make TEST="-D FLOAT"
-    ./run <matrix_market_input_file_path> <format_index>
+    make float
+    ./run_float <matrix_market_input_file_path> <format_string>
   
   ### double-precision
 
-    make
-    ./run <matrix_market_input_file_path> <format_index>
+    make double
+    ./run_double <matrix_market_input_file_path> <format_string>
     
-where <format_index> is 1 for COO, 2 for CSR, 3 for DIA and 4 for ELL
+where <format_string> can be COO, CSR, DIA and ELL.
 
 
 ## Run JavaScript implementation

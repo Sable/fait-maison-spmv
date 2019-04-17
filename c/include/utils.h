@@ -2,8 +2,16 @@
 #define UTILS_H
 
 #include<stdio.h>
+#include <ctype.h> 
+#include<string.h>
+#include<stdlib.h>
+#include<math.h>
 #include "config.h"
+#include "mmio.h"
 
+int count_nnz(FILE *f);
+void quickSort(int arr[], int arr2[], MYTYPE arr3[], int low, int high);
+int string_compare(char *, char *);
 void init_arr(int N, MYTYPE* a);
 void zero_arr(int N, MYTYPE* a);
 void cmp(MYTYPE *y, MYTYPE *y1, int N);

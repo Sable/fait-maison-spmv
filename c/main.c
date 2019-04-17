@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "config.h"
 
+#define OUTER_MAX 30
 
 int main(int argc, char* argv[])
 {
@@ -23,8 +24,9 @@ int main(int argc, char* argv[])
   MYTYPE *x, *y, *val, *dia_data, *ell_data, *coo_val;
   double v;
   clock_t start, stop;
-  double exec_arr[100];
+  double exec_arr[OUTER_MAX];
   double sum = 0, mean = 0, sd, variance = 0;
+  int inner, inner_max;
 
   if(argc < 2){
     fprintf(stderr, "Usage: %s [martix-market-filename]\n", argv[0]);
@@ -35,69 +37,17 @@ int main(int argc, char* argv[])
       exit(1);
   }
 
-  if(mm_read_banner(f, &matcode) != 0){
+  anz = count_nnz(f);
+
+  rewind(f);
+  if (mm_read_banner(f, &matcode) != 0)
+  {
     fprintf(stderr, "Could not process Matrix Market banner.\n");
     exit(1);
   }
-
-  /*  This is how one can screen matrix types if their application */
-  /*  only supports a subset of the Matrix Market data types.      */
-
-  if(mm_is_complex(matcode) && mm_is_matrix(matcode) && mm_is_sparse(matcode)){
-    fprintf(stderr, "Sorry, this application does not support ");
-    fprintf(stderr, "Market Market type: [%s]\n", mm_typecode_to_str(matcode));
-    exit(1);
-  }
-
-  /* find out size of sparse matrix .... */
-
-  if((ret_code = mm_read_mtx_crd_size(f, &M, &N, &entries)) !=0)
-    exit(1);
-
-  /* reseve memory for matrices */
-
-  if(mm_is_symmetric(matcode)){
-    anz = 0;
-    if(!mm_is_pattern(matcode)){
-      for (i=0; i<entries; i++)
-      {
-        fscanf(f, "%d %d %lf\n", &r, &c, &v);
-        if( v < 0 || v > 0){
-          if(r == c)
-            anz++;
-          else
-            anz = anz + 2;
-        }
-      }
-    }
-    else{
-      for (i=0; i<entries; i++)
-      {
-        fscanf(f, "%d %d\n", &r, &c);
-        if(r == c)
-          anz++;
-        else
-          anz = anz + 2;
-      }
-    } 
-  }
-  else{
-      anz = 0;
-      for (i=0; i<entries; i++)
-      {
-        fscanf(f, "%d %d %lf\n", &r, &c, &v);
-        if( v < 0 || v > 0)
-          anz++;
-      }
-  }
-    rewind(f);
-    if (mm_read_banner(f, &matcode) != 0)
-    {
-        fprintf(stderr, "Could not process Matrix Market banner.\n");
-        exit(1);
-    }
-    if ((ret_code = mm_read_mtx_crd_size(f, &M, &N, &entries)) !=0)
-        exit(1);
+  if ((ret_code = mm_read_mtx_crd_size(f, &M, &N, &entries)) !=0)
+      exit(1);
+  
   if(M > N) 
     N = M;
   else
@@ -210,129 +160,105 @@ int main(int argc, char* argv[])
     }
   }
 
-  if(atoi(argv[2]) == 1){
-    for (i=0; i<100; i++){
+  quickSort(row, col, coo_val, 0, anz-1);
+
+
+  if(anz > 1000000) inner_max = 1;
+  else if (anz > 100000) inner_max = 10;
+  else if (anz > 50000) inner_max = 50;
+  else if(anz > 10000) inner_max = 100;
+  else if(anz > 2000) inner_max = 1000;
+  else if(anz > 100) inner_max = 10000;
+
+  if(!string_compare(argv[2], "coo")){
+    for (i=0; i<OUTER_MAX; i++){
       zero_arr(N, y);
       start = clock();
-      spmv_coo(row, col, coo_val, anz, N, x, y);
+      for(inner = 0; inner < inner_max; inner++)
+        spmv_coo(row, col, coo_val, anz, N, x, y);
       stop = clock();
-      exec_arr[i] = 1.0/1000000 * 2 * anz / ((double)(stop - start)/ CLOCKS_PER_SEC); 
+      exec_arr[i] = 1.0/1000000 * 2 * anz * inner_max/ ((double)(stop - start)/ CLOCKS_PER_SEC); 
       sum += (double)(stop - start);
     }
     printf("%d,", N);
     printf("%d,", anz);
-    mean  = 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC);
-    for (i=0; i<100; i++){
+    mean  = 1.0/1000000 * 2 * anz * inner_max * OUTER_MAX / ((double)(sum) / CLOCKS_PER_SEC);
+    for (i=0; i<OUTER_MAX; i++){
       variance += (mean - exec_arr[i]) * (mean - exec_arr[i]);
     } 
-    variance /= 100;
+    variance /= OUTER_MAX;
     sd = sqrt(variance);
     printf("%f,", sd);
-    printf("%g,", 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC));
-    //printf("%d\n", fletcher_sum_1d_array_int(row, anz)); 
-    //printf("%d\n", fletcher_sum_1d_array_int(col, anz)); 
-    //printf("%d\n", fletcher_sum(coo_val, anz)); 
-    //printf("%d\n", fletcher_sum(x, M)); 
+    printf("%g,", mean);
     printf("%d", fletcher_sum(y, M)); 
-    //printf("%f\n", y[0]);
-    /*if((g = fopen("coo.txt", "w")) == NULL)
-      exit(1);
-    for(i=0; i<anz; i++)
-      fprintf(g, "%f\n", coo_val[i]); 
-    if (g !=stdin) 
-      fclose(g);*/
   }
 
-  else if(atoi(argv[2]) == 2){
+  if(!string_compare(argv[2], "csr")){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);
-    for (i=0; i<100; i++){
+    for (i=0; i<OUTER_MAX; i++){
       zero_arr(N, y);
       start = clock();
-      spmv_csr(row_ptr, colind, val, N, x, y);
+      for(inner = 0; inner < inner_max; inner++)
+        spmv_csr(row_ptr, colind, val, N, x, y);
       stop = clock();
-      exec_arr[i] = 1.0/1000000 * 2 * anz / ((double)(stop - start)/ CLOCKS_PER_SEC); 
+      exec_arr[i] = 1.0/1000000 * 2 * anz * inner_max / ((double)(stop - start)/ CLOCKS_PER_SEC); 
       sum += (double)(stop - start);
     }
-    mean  = 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC);
-    for (i=0; i<100; i++){
+    mean  = 1.0/1000000 * 2 * anz * inner_max * OUTER_MAX / ((double)(sum) / CLOCKS_PER_SEC);
+    for (i=0; i<OUTER_MAX; i++){
       variance += (mean - exec_arr[i]) * (mean - exec_arr[i]);
     } 
-    variance /= 100;
+    variance /= OUTER_MAX;
     sd = sqrt(variance);
     printf("%f,", sd);
-    printf("%g,", 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC));
-    //printf("%d\n", fletcher_sum_1d_array_int(row_ptr, N+1)); 
-    //printf("%d\n", fletcher_sum_1d_array_int(colind, anz)); 
-    //printf("%d\n", fletcher_sum(val, anz)); 
+    printf("%g,", mean);
     printf("%d", fletcher_sum(y, M)); 
-    /*if((g = fopen("csr.txt", "w")) == NULL)
-      exit(1);
-    for(i=0; i<M; i++)
-      fprintf(g, "%f\n", y[i]); 
-    if (g !=stdin) 
-      fclose(g);*/
   }
-  else if(atoi(argv[2]) == 3){
+  if(!string_compare(argv[2], "dia")){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);
     csr_dia(row_ptr, colind, val, &offset, &dia_data, N, &num_diags, &stride);
-    for (i=0; i<100; i++){
+    for (i=0; i<OUTER_MAX; i++){
       zero_arr(N, y);
       start = clock();
-      spmv_dia(offset, dia_data, N, num_diags, stride, x, y);
+      for(inner = 0; inner < inner_max; inner++)
+        spmv_dia(offset, dia_data, N, num_diags, stride, x, y);
       stop = clock();
-      exec_arr[i] = 1.0/1000000 * 2 * anz / ((double)(stop - start)/ CLOCKS_PER_SEC); 
+      exec_arr[i] = 1.0/1000000 * 2 * anz * inner_max / ((double)(stop - start)/ CLOCKS_PER_SEC); 
       sum += (double)(stop - start);
     }
-    mean  = 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC);
-    for (i=0; i<100; i++){
+    mean  = 1.0/1000000 * 2 * anz * inner_max * OUTER_MAX / ((double)(sum) / CLOCKS_PER_SEC);
+    for (i=0; i<OUTER_MAX; i++){
       variance += (mean - exec_arr[i]) * (mean - exec_arr[i]);
     } 
-    variance /= 100;
+    variance /= OUTER_MAX;
     sd = sqrt(variance);
     printf("%f,", sd);
-    printf("%g,", 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC));
-    //printf("%d\n", fletcher_sum(dia_data, num_diags * stride)); 
-    //printf("%d\n", fletcher_sum_1d_array_int(offset, num_diags)); 
-    //printf("y is %f %f\n", y[0], y[1]);
+    printf("%g,", mean);
     printf("%d", fletcher_sum(y, M)); 
-    /*if((g = fopen("dia.txt", "w")) == NULL)
-      exit(1);
-    for(i=0; i<M; i++)
-      fprintf(g, "%f\n", y[i]); 
-    if (g !=stdin) 
-      fclose(g);*/
     free(dia_data);
     free(offset);
   }
-  else if(atoi(argv[2]) == 4){
+  if(!string_compare(argv[2], "ell")){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);
     csr_ell(row_ptr, colind, val, &indices, &ell_data, N, &num_cols);
-    for (i=0; i<100; i++){
+    for (i=0; i<OUTER_MAX; i++){
       zero_arr(N, y);
       start = clock();
-      spmv_ell(indices, ell_data, N, num_cols, x, y);
+      for(inner = 0; inner < inner_max; inner++)
+        spmv_ell(indices, ell_data, N, num_cols, x, y);
       stop = clock();
-      exec_arr[i] = 1.0/1000000 * 2 * anz / ((double)(stop - start)/ CLOCKS_PER_SEC); 
+      exec_arr[i] = 1.0/1000000 * 2 * anz * inner_max / ((double)(stop - start)/ CLOCKS_PER_SEC); 
       sum += (double)(stop - start);
     }
-    mean  = 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC);
-    for (i=0; i<100; i++){
+    mean  = 1.0/1000000 * 2 * anz * inner_max * OUTER_MAX / ((double)(sum) / CLOCKS_PER_SEC);
+    for (i=0; i<OUTER_MAX; i++){
       variance += (mean - exec_arr[i]) * (mean - exec_arr[i]);
     } 
-    variance /= 100;
+    variance /= OUTER_MAX;
     sd = sqrt(variance);
     printf("%f,", sd);
-    printf("%g,", 1.0/1000000 * 2 * anz * 100 / ((double)(sum) / CLOCKS_PER_SEC));
-    //printf("%d\n", fletcher_sum(ell_data, num_cols * N)); 
-    //printf("%d\n", fletcher_sum_1d_array_int(indices, num_cols * N)); 
+    printf("%g,", mean);
     printf("%d", fletcher_sum(y, M)); 
-    /*if((g = fopen("ell.txt", "w")) == NULL)
-      exit(1);
-    for(i=0; i<M; i++)
-      fprintf(g, "%f\n", y[i]); 
-    if (g !=stdin) 
-      fclose(g);
-    */
     free(ell_data);
     free(indices);
   }

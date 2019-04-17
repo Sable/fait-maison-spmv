@@ -10,16 +10,23 @@ ASMS = $(SRCS:.c=.s)
 
 LIBS = -lm
 
-CFLAGS = -m64 -O3 $(TEST) 
+CFLAGS = -m64 -O3 -Wno-unused-result 
 
-run: $(OBJS) $(ASMS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(OBJS) $(LIBS)
+float: ARG = -DFLOAT
+float:  $(OBJS)
+	$(CC) $(CFLAGS) $(ARG) $(INCLUDES) -o run_$@ $(OBJS) $(LIBS)
+	rm -f *.o
+
+double: $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o run_$@ $(OBJS) $(LIBS)
+	rm -f *.o
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $< 
+	$(CC) $(CFLAGS) $(ARG) $(INCLUDES) -c -o $@ $< 
 
 %.s: %.c
 	$(CC) $(CFLAGS) -S $(INCLUDES) $< 
 
 clean:
-	-rm -f run *.o *.s
+	-rm -f run_* *.o *.s
+

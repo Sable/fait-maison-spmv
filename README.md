@@ -5,8 +5,12 @@ Sparse matrix-vector multiplication (SpMV) uniprocessor implementations for C an
 The input matrix is required to be in Matrix Market format (.mtx). Some real-life examples of sparse matrices in this external format can be obtained from The SuiteSparse Matrix Collection (formerly the University of Florida Sparse Matrix Collection) at https://sparse.tamu.edu
 
 ## Matrix Features
-1. Number of non-zeros, _nnz_
-2. Matrix dimension, _N_
+
+    make features
+    ./run_features <matrix_market_input_file_path>
+
+1. Matrix dimension, _N_
+2. Number of non-zeros, _nnz_ 
 3. Density, _nnz/(N * N)_
 4. Number of non-zeros per row, *nnz_row* (min, max, mean, sd)
 5. Column width per row, *col_width_row* (min, max, mean, sd)

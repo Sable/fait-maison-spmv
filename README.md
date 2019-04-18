@@ -40,6 +40,10 @@ Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the 
     ./run_double <matrix_market_input_file_path> <format_string>
     
 where <format_string> can be COO, CSR, DIA and ELL.
+  
+  ### Debug with PAPI
+    make float DEBUG=1
+    ./run_float <matrix_market_input_file_path> <format_string>
 
 ## Run JavaScript implementation
   

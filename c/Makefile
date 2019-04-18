@@ -12,23 +12,32 @@ FEATURES_OBJS = $(FEATURES_SRCS:.c=.o)
 
 LIBS = -lm
 
-CFLAGS = -m64 -O3 -Wno-unused-result 
+CFLAGS = -m64 -O3 -Wno-unused-result
 
-float: ARG = -DFLOAT
+DEBUG ?= 0
+ifeq ($(DEBUG), 1)
+  CFLAGS += -DDEBUG 
+  LIBS += -L/mnt/cheetah/lib -lpapi -lpfm
+  INCLUDES += -I/mnt/cheetah/papi/src
+endif
+
+OUT=run
+
+float: CFLAGS += -DFLOAT
 float: $(OBJS)
-	$(CC) $(CFLAGS) $(ARG) $(INCLUDES) -o run_$@ $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(OBJS) $(LIBS)
 	rm -f *.o
 
 double: $(OBJS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o run_$@ $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(OBJS) $(LIBS)
 	rm -f *.o
 
 features: $(FEATURES_OBJS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o run_$@ $(FEATURES_OBJS) $(LIBS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(FEATURES_OBJS) $(LIBS)
 	rm -f *.o
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(ARG) $(INCLUDES) -c -o $@ $< 
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $< 
 
 %.s: %.c
 	$(CC) $(CFLAGS) -S $(INCLUDES) $< 

@@ -1,5 +1,11 @@
 # fait-maison-spmv
-Sparse matrix-vector multiplication (SpMV) uniprocessor implementations for C and two web languages : JavaScript and WebAssembly for each of the four formats -- COO, CSR, DIA and ELL. These implementations follow closely to conventional implementations of SpMV that target cache-based superscalar uniprocessor machines.
+Sparse matrix-vector multiplication (SpMV) implementations for each of the four formats -- COO, CSR, DIA and ELL.
+
+## Sequential 
+For C, JavaScript, and WebAssembly via Emscripten. These implementations follow closely to conventional implementations of SpMV that target cache-based superscalar uniprocessor machines.
+
+## Parallel
+For C using pthreads and WebAssembly via Emscripten.
 
 ## Input Matrices
 The input matrix is required to be in Matrix Market format (.mtx). Some real-life examples of sparse matrices in this external format can be obtained from The SuiteSparse Matrix Collection (formerly the University of Florida Sparse Matrix Collection) at https://sparse.tamu.edu

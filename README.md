@@ -29,12 +29,12 @@ Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the 
 
 ## Run C implementation
 
-  ### single-precision
+  ### Single precision
 
     make float
     ./run_float <matrix_market_input_file_path> <format_string>
   
-  ### double-precision
+  ### Double precision
 
     make double
     ./run_double <matrix_market_input_file_path> <format_string>

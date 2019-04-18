@@ -1,6 +1,9 @@
 # fait-maison-spmv
 Sparse matrix-vector multiplication (SpMV) implementations for each of the four formats -- COO, CSR, DIA and ELL.
 
+    y = Ax
+where _A_ is a _M x N_ sparse matrix with _nnz_ number of non-zeros, _x_ is a dense input vector of size _N_ and _y_ is a dense output vector of size _M_.
+
 ## Sequential 
 For C, JavaScript, and WebAssembly via Emscripten. These implementations follow closely to conventional implementations of SpMV that target cache-based superscalar uniprocessor machines.
 
@@ -9,6 +12,13 @@ For C using pthreads and WebAssembly via Emscripten.
 
 ## Input Matrices
 The input matrix is required to be in Matrix Market format (.mtx). Some real-life examples of sparse matrices in this external format can be obtained from The SuiteSparse Matrix Collection (formerly the University of Florida Sparse Matrix Collection) at https://sparse.tamu.edu
+
+Our implementations currently support square sparse matrices, where M == N. We categorize the matrices based on the size equal to sizeof(x) + sizeof(y)
+
+    1. X-Large : don't fit in the L3 cache.
+    2. Large : fit in L3 cache, but don't fit in the L2 cache.
+    3. Medium : fit in L2 cache, but don't fit in the L1 cache.
+    4. Small : fit in the L1 cache.
 
 ## Matrix Features
 

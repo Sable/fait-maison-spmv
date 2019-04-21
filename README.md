@@ -33,6 +33,13 @@ Our implementations currently support square sparse matrices, where M == N. We c
 6. Scatter ratio per row, *scatter_row* (min, max, mean, sd)
 7. Miss density per row, *miss_density_row*
 
+_Flop:Byte_ is the ratio of total number of floating point operations to the total number of bytes of the storage format.
+For example, for single-precision CSR format sparse matrix ->
+    
+    Flop : Byte = 2 * nnz / 8 * nnz + 12 * N
+    
+The matrices with high _Flop:Byte_ ratio seem to perform better than others. The low performance of matrices with high _Flop:Byte_ ratio can be explained by low _nnz_row_, which is equal to the number of times inner loop of SpMV CSR executes. Therefore, the overhead of the inner loop seems to bring performance down. Also, the huge variation between the number of non-zeros per row potentially leads to high branch mispredictions.  
+
 ## Experiments
 
 Please follow [ManLang18-SpMV](https://github.com/Sable/manlang18-spmv) for the experimental data and scripts.

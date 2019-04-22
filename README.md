@@ -38,6 +38,13 @@ For example, for single-precision CSR format sparse matrix ->
     
     Flop : Byte = 2 * nnz / 8 * nnz + 12 * N
     
+Following are the scatter plots for our benchmark suite based on different sizes 
+(comparing the SpMV performance in MFLOPS vs flop:byte) -> 
+    
+ <img src="./tests/results/scatter_plots/xlarge_flop_byte_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/large_flop_byte_scatter_plot.png" width = 420/>
+ 
+ <img src="./tests/results/scatter_plots/medium_flop_byte_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/small_flop_byte_scatter_plot.png" width = 420/>
+    
 The matrices with high _Flop:Byte_ ratio seem to perform better than others. The low performance of matrices with high _Flop:Byte_ ratio can be explained by low _nnz_row_, which is equal to the number of times inner loop of SpMV CSR executes. Therefore, the overhead of the inner loop seems to bring performance down. Also, the huge variation between the number of non-zeros per row potentially leads to high branch mispredictions.  
 
 ## Experiments

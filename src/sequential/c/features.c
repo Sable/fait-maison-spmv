@@ -29,6 +29,18 @@ double sum_f(float *arr, int n)
   return sum;
 }
 
+float geo_mean(float *arr, int n){
+  float sum = 0;
+  int i;
+
+  for(i = 0; i < n; i++)
+    sum += log(arr[i]);
+
+  sum /= n;
+
+  return exp(sum);
+}
+
 float mean_f(float *arr, int n)
 {
   double sum = sum_f(arr, n);
@@ -44,7 +56,17 @@ float sd_i(int *arr, int n, float mean_i)
   }
   var = var/n;
   return sqrt(var);
-  
+}
+
+float sd_f(float *arr, int n, float mean_i)
+{
+  float var = 0.0;
+  int i;
+  for(i = 0; i < n; i++){
+    var += (mean_i - arr[i]) * (mean_i - arr[i]);
+  }
+  var = var/n;
+  return sqrt(var);
 }
 
 int main(int argc, char* argv[])
@@ -52,9 +74,9 @@ int main(int argc, char* argv[])
   MM_typecode matcode;
   int i, k, M, N, entries, anz, r, c, ret_code;
   double v;
-  int *row, *col, *nnz_row, *col_width, *first_col_row, *last_col_row, last_col = -1;
+  int *row, *col, *col_width, *first_col_row, *last_col_row, last_col = -1;
   int *x_used;
-  float *scatter_row, *misses;
+  float *nnz_row, *scatter_row, *misses;
   int total_misses;
   int min_nnz_row, max_nnz_row, min_col_width, max_col_width;
   MYTYPE *coo_val;
@@ -104,7 +126,7 @@ int main(int argc, char* argv[])
     fprintf(stderr, "couldn't allocate val using malloc");
     exit(1);
   }
-  nnz_row = (int*)calloc(N, sizeof(int));
+  nnz_row = (float*)calloc(N, sizeof(float));
   if(nnz_row == NULL){
     fprintf(stderr, "couldn't allocate nnz_row using malloc");
     exit(1);
@@ -254,14 +276,29 @@ int main(int argc, char* argv[])
       misses[i] = misses[i]/nnz_row[i];
     if(x_used[i] > 0)
       total_misses++;
+    nnz_row[i] = (float)nnz_row[i]/N;
+    if(nnz_row[i] == 0)
+      nnz_row[i] = 0.1/N;
   }
 
   printf("%d,%d,", N, anz);
   printf("%e,", anz/((float)N * N));
-  printf("%d,%d,%.2f,%.2f,", min_nnz_row, max_nnz_row, mean_i(nnz_row, N), sd_i(nnz_row, N, mean_i(nnz_row, N)));
-  printf("%d,%d,%.2f,%.2f,", min_col_width, max_col_width, mean_i(col_width, N), sd_i(col_width, N, mean_i(col_width, N)));
+  printf("%e,%e,%e,", (float)min_nnz_row/N, (float)max_nnz_row/N, geo_mean(nnz_row, N));
+  printf("%e,%e,%e,", (float)min_col_width/N, (float)max_col_width/N, mean_i(col_width, N));
   printf("%.3f,", mean_f(scatter_row, N)); 
-  printf("%.3f\n", mean_f(misses, N));
+  printf("%e,", geo_mean(misses, N));
+  printf("%e\n", (float)(2 * anz)/(8 * anz + 12 * N));
+
+  free(row);
+  free(col);
+  free(coo_val);
+  free(nnz_row);
+  free(first_col_row);
+  free(last_col_row);
+  free(col_width);
+  free(scatter_row);
+  free(misses);
+  free(x_used);
 
   return 0;
 }

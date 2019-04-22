@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
   else if(anz > 10000) inner_max = 100;
   else if(anz > 2000) inner_max = 1000;
   else if(anz > 100) inner_max = 10000;
-
+ 
   if(!string_compare(argv[2], "coo")){
     #ifdef DEBUG
     if ((ret = PAPI_start(event_set)) != PAPI_OK) {
@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
 
   if(!string_compare(argv[2], "dia")){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);
-    csr_dia(row_ptr, colind, val, &offset, &dia_data, N, &num_diags, &stride);
+    csr_dia(row_ptr, colind, val, &offset, &dia_data, N, &num_diags, &stride, anz);
     #ifdef DEBUG
     if ((ret = PAPI_start(event_set)) != PAPI_OK) {
       fprintf(stderr, "PAPI failed to start counters: %s\n", PAPI_strerror(ret));
@@ -329,7 +329,7 @@ int main(int argc, char* argv[])
 
   if(!string_compare(argv[2], "ell")){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);
-    csr_ell(row_ptr, colind, val, &indices, &ell_data, N, &num_cols);
+    csr_ell(row_ptr, colind, val, &indices, &ell_data, N, &num_cols, anz);
     #ifdef DEBUG
     if ((ret = PAPI_start(event_set)) != PAPI_OK) {
       fprintf(stderr, "PAPI failed to start counters: %s\n", PAPI_strerror(ret));

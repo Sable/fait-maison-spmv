@@ -32,15 +32,15 @@ void coo_csr(int nz, int N, int *row, int *col, MYTYPE *coo_val, int *row_ptr, i
   }
   row_ptr[0] = 0;
   row_ptr[N] = nz;
-  for(i = 0; i < N; i++){
+  /*for(i = 0; i < N; i++){
     sort(row_ptr[i],row_ptr[i+1], colind, val);
-  }
+  }*/
   stop = clock();
 
 //  printf("Elapsed time for coo to csr =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
 }
 
-void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **data, int N, int* num_cols)
+void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **data, int N, int* num_cols, int nnz)
 {
   int i, j, k, col, max = 0, temp = 0;
   clock_t start, stop;
@@ -64,6 +64,12 @@ void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **dat
       k++;
     }
   }*/
+
+  if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max)/nnz) > 3){
+    fprintf(stderr, "too large");
+    exit(1);
+  }
+
   *data = (MYTYPE*)malloc((size_t)N * max * sizeof(MYTYPE));
   if(*data == NULL){
     fprintf(stderr, "couldn't allocate ell_data using malloc");
@@ -87,7 +93,7 @@ void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **dat
 
 }
 
-void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data, int N, int *nd, int *stride)
+void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data, int N, int *nd, int *stride, int nnz)
 {
   int i, j, num_diag, min, *ind, index, diag_no, col, k;
   clock_t start, stop;
@@ -127,6 +133,10 @@ void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data
   }
   *stride = N - min;
   size_t size = (size_t)num_diag * *stride;
+  if(size > pow(2, 27) || (size/nnz) > 3){
+    fprintf(stderr, "too large");
+    exit(1);
+  }
   *data = (MYTYPE*)calloc(size, sizeof(MYTYPE));
   if(*data == NULL){
     fprintf(stderr, "couldn't allocate *data using calloc\n");

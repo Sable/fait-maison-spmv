@@ -19,6 +19,14 @@ Our implementations currently support square sparse matrices, where M == N. We c
     2. Large : fit in L3 cache, but don't fit in the L2 cache.
     3. Medium : fit in L2 cache, but don't fit in the L1 cache.
     4. Small : fit in the L1 cache.
+    
+For our cheetah machine, L1 : 32KB, L2 : 256KB, L3 : 12MB
+Therefore, for single-precision storage, 
+
+     X-Large : N > 1,572,864
+     Large : 32,768 < N < 1,572,864
+     Medium : 4,096 < N < 32,768
+     Small : N < 4,096
 
 ## Matrix Features
 

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullFormatter
 import sys
 
 L1 = 32 * 1024
@@ -25,31 +26,39 @@ for index, row in df.iterrows():
   if (int(row['N']) * 8) < L1 :
     df_small = df_small.append(row)
 
-plt.xlabel('flop:byte')
+plt.xlabel('Min nnz per row / N')
 plt.ylabel('Performance')
-plt.scatter(df_small['flop_byte_ratio'], df_small['mflops'])
+plt.xscale('logit')
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_small['min_nnz_row'], df_small['mflops'])
 plt.title('small')
-plt.savefig(out_dir+'small_flop_byte_scatter_plot.png')
+plt.savefig(out_dir+'small_min_nnz_scatter_plot.png')
 plt.clf()
 
-plt.xlabel('flop:byte')
+plt.xlabel('Min nnz per row / N')
 plt.ylabel('Performance')
-plt.scatter(df_xlarge['flop_byte_ratio'], df_xlarge['mflops'])
+plt.xscale('logit')
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_xlarge['min_nnz_row'], df_xlarge['mflops'])
 plt.title('xlarge')
-plt.savefig(out_dir+'xlarge_flop_byte_scatter_plot.png')
+plt.savefig(out_dir+'xlarge_min_nnz_scatter_plot.png')
 plt.clf()
 
-plt.xlabel('flop:byte')
+plt.xlabel('Min nnz per row / N')
 plt.ylabel('Performance')
-plt.scatter(df_large['flop_byte_ratio'], df_large['mflops'])
+plt.xscale('logit')
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_large['min_nnz_row'], df_large['mflops'])
 plt.title('large')
-plt.savefig(out_dir+'large_flop_byte_scatter_plot.png')
+plt.savefig(out_dir+'large_min_nnz_plot.png')
 plt.clf()
 
-plt.xlabel('flop:byte')
+plt.xlabel('Min nnz per row / N')
 plt.ylabel('Performance')
-plt.scatter(df_medium['flop_byte_ratio'], df_medium['mflops'])
+plt.xscale('logit')
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_medium['min_nnz_row'], df_medium['mflops'])
 plt.title('medium')
-plt.savefig(out_dir+'medium_flop_byte_scatter_plot.png')
+plt.savefig(out_dir+'medium_min_nnz_plot.png')
 plt.clf()
 

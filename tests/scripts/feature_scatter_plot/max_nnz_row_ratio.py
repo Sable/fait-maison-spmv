@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullFormatter
 import sys
 
 L1 = 32 * 1024
@@ -27,37 +28,38 @@ for index, row in df.iterrows():
 
 
 
-plt.xlabel('Density')
+plt.xlabel('Max nnz per row / N')
 plt.ylabel('Performance')
 plt.xscale('log')
-plt.scatter(df_small['density'], df_small['mflops'])
-plt.title('small')
-plt.savefig(out_dir+'small_density_scatter_plot.png')
-
-plt.clf()
-
-plt.xlabel('Density')
-plt.ylabel('Performance')
-plt.xscale('log')
-plt.scatter(df_xlarge['density'], df_xlarge['mflops'])
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_xlarge['max_nnz_row'], df_xlarge['mflops'])
 plt.title('xlarge')
-plt.savefig(out_dir+'xlarge_density_scatter_plot.png')
-
+plt.savefig(out_dir+'xlarge_max_nnz_scatter_plot.png')
 plt.clf()
 
-plt.xlabel('Density')
+plt.xlabel('Max nnz per row / N')
 plt.ylabel('Performance')
 plt.xscale('log')
-plt.scatter(df_large['density'], df_large['mflops'])
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_large['max_nnz_row'], df_large['mflops'])
 plt.title('large')
-plt.savefig(out_dir+'large_density_scatter_plot.png')
-
+plt.savefig(out_dir+'large_max_nnz_plot.png')
 plt.clf()
 
-plt.xlabel('Density')
+plt.xlabel('Max nnz per row / N')
 plt.ylabel('Performance')
 plt.xscale('log')
-plt.scatter(df_medium['density'], df_medium['mflops'])
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_medium['max_nnz_row'], df_medium['mflops'])
 plt.title('medium')
-plt.savefig(out_dir+'medium_density_scatter_plot.png')
+plt.savefig(out_dir+'medium_max_nnz_plot.png')
+plt.clf()
 
+plt.xlabel('Max nnz per row / N')
+plt.ylabel('Performance')
+plt.xscale('log')
+plt.gca().xaxis.set_minor_formatter(NullFormatter())
+plt.scatter(df_small['max_nnz_row'], df_small['mflops'])
+plt.title('small')
+plt.savefig(out_dir+'small_max_nnz_scatter_plot.png')
+plt.clf()

@@ -48,7 +48,7 @@ For example, for single-precision CSR format sparse matrix ->
     
     Flop : Byte = (2 * nnz) / (8 * nnz + 12 * N)
     
-Following are the scatter plots for our benchmark suite based on different sizes 
+Following are the scatter plots for our benchmark suite (correlation coefficient : 0.607) based on different sizes 
 (comparing the SpMV performance in MFLOPS vs flop:byte) -> 
     
  <img src="./tests/results/scatter_plots/xlarge_flop_byte_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/large_flop_byte_scatter_plot.png" width = 420/>

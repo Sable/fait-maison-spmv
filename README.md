@@ -67,6 +67,16 @@ Following are the scatter plots for our benchmark suite based on different sizes
 <img src="./tests/results/scatter_plots/xlarge_density_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/large_density_scatter_plot.png" width = 420/>
  
  <img src="./tests/results/scatter_plots/medium_density_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/small_density_scatter_plot.png" width = 420/>
+ 
+### Cache Miss Density
+
+   Theoretically, low miss density leads to better performance. It means correlation coefficient should be closer to -1.
+   Following are the scatter plots for our benchmark suite (correlation coefficient : -0.372) based on different sizes 
+(comparing the SpMV performance in MFLOPS vs Miss Density) -> 
+
+<img src="./tests/results/scatter_plots/xlarge_miss_density_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/large_miss_density_scatter_plot.png" width = 420/>
+ 
+ <img src="./tests/results/scatter_plots/medium_miss_density_scatter_plot.png" width = 420/>   <img src="./tests/results/scatter_plots/small_miss_density_scatter_plot.png" width = 420/>
 
 ## Experiments
 

@@ -279,13 +279,17 @@ int main(int argc, char* argv[])
     nnz_row[i] = (float)nnz_row[i]/N;
     if(nnz_row[i] == 0)
       nnz_row[i] = 0.1/N;
+    if(misses[i] == 0)
+      misses[i] = 0.1/N;
+    if(scatter_row[i] == 0)
+      scatter_row[i] = 0.1/N;
   }
 
   printf("%d,%d,", N, anz);
   printf("%e,", anz/((float)N * N));
   printf("%e,%e,%e,", (float)min_nnz_row/N, (float)max_nnz_row/N, geo_mean(nnz_row, N));
   printf("%e,%e,%e,", (float)min_col_width/N, (float)max_col_width/N, mean_i(col_width, N));
-  printf("%.3f,", mean_f(scatter_row, N)); 
+  printf("%.3f,", geo_mean(scatter_row, N)); 
   printf("%e,", geo_mean(misses, N));
   printf("%e\n", (float)(2 * anz)/(8 * anz + 12 * N));
 

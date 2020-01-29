@@ -1,5 +1,17 @@
 #include "utils.h"
 
+int count_uniq_elems(int end, int start, int *arr, int *h){
+  int i, j;
+  int res = 0; 
+  
+  for (i = start+1; i < end; i++) {  
+    if(!(h[arr[i]/16]))
+      res++;
+    h[arr[i]/16]++;
+  } 
+  return res; 
+}
+
 int string_compare(char *s1, char *s2)
 {
   int i;

@@ -1,5 +1,5 @@
 SHELL := '/bin/bash'
-CC = gcc
+CC = gcc-7
 
 INCLUDES = -I./include
 
@@ -12,7 +12,7 @@ FEATURES_OBJS = $(FEATURES_SRCS:.c=.o)
 
 LIBS = -lm
 
-CFLAGS = -m64 -O3 -Wno-unused-result
+CFLAGS = -m64 -march=native -mtune=native -O3 -Wno-unused-result
 
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
@@ -21,10 +21,15 @@ ifeq ($(DEBUG), 1)
   INCLUDES += -I/mnt/cheetah/papi/src
 endif
 
+ELLR ?= 0
+ifeq ($(ELLR), 1)
+  CFLAGS += -DELLR 
+endif
+
 OUT=run
 
 float: CFLAGS += -DFLOAT
-float: $(OBJS)
+float: $(OBJS) $(ASMS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(OBJS) $(LIBS)
 	rm -f *.o
 
@@ -34,6 +39,11 @@ double: $(OBJS)
 
 features: $(FEATURES_OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(FEATURES_OBJS) $(LIBS)
+	rm -f *.o
+
+dense: CFLAGS += -DDENSE
+dense: $(OBJS)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUT)_$@ $(OBJS) $(LIBS)
 	rm -f *.o
 
 %.o: %.c

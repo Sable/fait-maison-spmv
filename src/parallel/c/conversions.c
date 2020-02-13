@@ -28,9 +28,7 @@ void coo_csr(int nz, int N, int *row, int *col, MYTYPE *coo_val, int *row_ptr, i
 {
   int i, j, j0, r, c;
   MYTYPE data;
-  clock_t start, stop;
 
-  start = clock();
   for (i=0; i<nz; i++)
     row_ptr[row[i]]++;
 
@@ -56,10 +54,9 @@ void coo_csr(int nz, int N, int *row, int *col, MYTYPE *coo_val, int *row_ptr, i
   }
   row_ptr[0] = 0;
   row_ptr[N] = nz;
-  for(i = 0; i < N; i++){
+  /*for(i = 0; i < N; i++){
     sort(row_ptr[i],row_ptr[i+1], colind, val);
-  }
-  stop = clock();
+  }*/
 
 //  printf("Elapsed time for coo to csr =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
 }
@@ -67,9 +64,7 @@ void coo_csr(int nz, int N, int *row, int *col, MYTYPE *coo_val, int *row_ptr, i
 void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **data, int N, int* num_cols, int nnz)
 {
   int i, j, k, col, max = 0, temp = 0;
-  clock_t start, stop;
 
-  start = clock();
   for(i = 0; i < N ; i++){
     temp = row_ptr[i+1] - row_ptr[i];
     if (max < temp)
@@ -77,31 +72,28 @@ void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **dat
   }
   *num_cols = max;
  
-  //printf("num of cols : %d\n", max);
-  /*for(i = 0; i < N; i++){
-    data[i] = (MYTYPE*)calloc(max, sizeof(MYTYPE));
-    indices[i] = (int*)calloc(max, sizeof(int));
-    k = 0;
-    for(j = row_ptr[i]; j < row_ptr[i+1]; j++){
-      data[i][k] = val[j];
-      indices[i][k] = colind[j];
-      k++;
-    }
-  }*/
-    if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max)/nnz) > 3){
+  if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max * 2)/nnz) > 10){
       fprintf(stderr, "too large");
       exit(1);
-    }
-  *data = (MYTYPE*)malloc((size_t)N * max * sizeof(MYTYPE));
+  }
+
+  *data = (MYTYPE*)calloc((size_t)N * max, sizeof(MYTYPE));
   if(*data == NULL){
     fprintf(stderr, "couldn't allocate ell_data using malloc");
     exit(1);
   }
-  *indices = (int*)malloc((size_t)N * max * sizeof(int));
+  *indices = (int*)calloc((size_t)N * max, sizeof(int));
   if(*indices == NULL){
     fprintf(stderr, "couldn't allocate indices using malloc");
     exit(1);
   }
+
+  for(i = 0; i < max; i++){
+    for(j = 0; j < N; j++){
+      (*indices)[i*N+j] = -1;
+    }
+  }
+
   for(i = 0; i < N; i++){
     k = 0;
     for(j = row_ptr[i]; j < row_ptr[i+1]; j++){
@@ -110,14 +102,19 @@ void csr_ell(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **dat
       k++;
     }
   }
-  stop = clock();
- // printf("Elapsed time for csr to ell =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
 
+  /*int prev_index = 0;
+  for(i = 0; i < N; i++){
+    for(j = 0; j < max; j++){
+      if((*indices)[i*max+j] == -1)
+        (*indices)[i*max+j] = prev_index;
+      prev_index = (*indices)[i*max+j];
+    }
+  }*/
 }
 void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data, int N, int *nd, int *stride, int nnz)
 {
   int i, j, num_diag, min, *ind, index, diag_no, col, k;
-  clock_t start, stop;
   int move;
   num_diag = 0;
 
@@ -127,7 +124,6 @@ void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data
     exit(1);
   }
 
-  start = clock();
   for(i = 0; i < N ; i++){
     for(j = row_ptr[i]; j<row_ptr[i+1]; j++){
       if(!ind[N+colind[j]-i-1]++)
@@ -181,14 +177,11 @@ void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data
       }
     }
   } 
-  stop = clock();
-  //printf("Elapsed time for csr to dia =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
 }
 
 void csr_diaii(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data, int N, int *nd, int *stride, int nnz)
 {
   int i, j, num_diag, min, *ind, index, diag_no, col, k;
-  clock_t start, stop;
   int move;
   num_diag = 0;
 
@@ -198,7 +191,6 @@ void csr_diaii(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **da
     exit(1);
   }
 
-  start = clock();
   for(i = 0; i < N ; i++){
     for(j = row_ptr[i]; j<row_ptr[i+1]; j++){
       if(!ind[N+colind[j]-i-1]++)
@@ -251,16 +243,13 @@ void csr_diaii(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **da
       }
     }
   }
-  stop = clock();
   //printf("Elapsed time for csr to dia =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
 }
 
 void csr_ellii(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **data, int N, int* num_cols, int nnz)
 { 
   int i, j, k, col, max = 0, temp = 0;
-  clock_t start, stop;
   
-  start = clock(); 
   for(i = 0; i < N ; i++){
     temp = row_ptr[i+1] - row_ptr[i];
     if (max < temp)
@@ -268,31 +257,27 @@ void csr_ellii(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **d
   }
   *num_cols = max;
   
-  //printf("num of cols : %d\n", max);
-  /*for(i = 0; i < N; i++){
-    data[i] = (MYTYPE*)calloc(max, sizeof(MYTYPE));
-    indices[i] = (int*)calloc(max, sizeof(int));
-    k = 0;
-    for(j = row_ptr[i]; j < row_ptr[i+1]; j++){
-      data[i][k] = val[j];
-      indices[i][k] = colind[j];
-      k++;
-    }
-  }*/
-    if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max)/nnz) > 3){
+  if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max * 2)/nnz) > 10){
       fprintf(stderr, "too large");
       exit(-1);
-    }
-  *data = (MYTYPE*)malloc((size_t)N * max * sizeof(MYTYPE));
+  }
+
+  *data = (MYTYPE*)calloc((size_t)N * max, sizeof(MYTYPE));
   if(*data == NULL){
     fprintf(stderr, "couldn't allocate ell_data using malloc");
     exit(1);
   }
-  *indices = (int*)malloc((size_t)N * max * sizeof(int));
+  *indices = (int*)calloc((size_t)N * max, sizeof(int));
   if(*indices == NULL){
     fprintf(stderr, "couldn't allocate indices using malloc");
     exit(1);
   }
+
+  /*for(i = 0; i < max; i++){
+    for(j = 0; j < N; j++){
+      (*indices)[i*N+j] = -1;
+    }
+  }*/
 
   for(i = 0; i < N; i++){
     k = 0;
@@ -302,10 +287,6 @@ void csr_ellii(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **d
       k++;
     }
   }
-
-  stop = clock();
- // printf("Elapsed time for csr to ell =\t %g milliseconds\n", ((double)(stop - start)) / CLOCKS_PER_SEC * 1000);
-
 }
 
 void csr_custom(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data, int N, int *nd, int **ptr)

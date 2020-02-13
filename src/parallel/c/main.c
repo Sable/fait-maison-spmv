@@ -19,6 +19,8 @@
 #include "utils.h"
 #include "config.h"
 #include "papi.h"
+#include <sys/types.h>
+#include <sys/syscall.h>
 
 #define OUTER_MAX 30
 
@@ -26,7 +28,7 @@ void *spmv_coo_wrapper(void *ptr){
   int inside;
   spmv_coo_struct *s = (spmv_coo_struct *) ptr;
   cpu_set_t cpuset; 
-  int cpu = s->tid;
+  int cpu = s->tid + 1;
   CPU_ZERO(&cpuset);       //clears the cpuset
   CPU_SET(cpu, &cpuset);
   sched_setaffinity(0, sizeof(cpuset), &cpuset);
@@ -42,11 +44,11 @@ void *spmv_coo_wrapper(void *ptr){
 void *spmv_csr_wrapper(void *ptr){
   int inside;
   spmv_csr_struct *s = (spmv_csr_struct *) ptr;
-  /*cpu_set_t cpuset; 
-  int cpu = s->tid;
+  cpu_set_t cpuset; 
+  int cpu = s->tid + 1;
   CPU_ZERO(&cpuset);       //clears the cpuset
-  CPU_SET(cpu, &cpuset); */
-  //sched_setaffinity(0, sizeof(cpuset), &cpuset);
+  CPU_SET(cpu, &cpuset);
+  sched_setaffinity(0, sizeof(cpuset), &cpuset);
 
   int N = s->len;
   int inside_max = s->inside_max;
@@ -59,11 +61,11 @@ void *spmv_csr_wrapper(void *ptr){
 void *spmv_dia_wrapper(void *ptr){
   int inside;
   spmv_dia_struct *s = (spmv_dia_struct *) ptr;
-  /*cpu_set_t cpuset; 
-  int cpu = s->tid;
+  cpu_set_t cpuset; 
+  int cpu = s->tid + 1;
   CPU_ZERO(&cpuset);       //clears the cpuset
-  CPU_SET(cpu, &cpuset); */
-  //sched_setaffinity(0, sizeof(cpuset), &cpuset);
+  CPU_SET(cpu, &cpuset);
+  sched_setaffinity(0, sizeof(cpuset), &cpuset);
 
   int inside_max = s->inside_max;
   for(inside = 0; inside < inside_max; inside++){
@@ -75,11 +77,11 @@ void *spmv_dia_wrapper(void *ptr){
 void *spmv_ell_wrapper(void *ptr){
   int inside;
   spmv_ell_struct *s = (spmv_ell_struct *) ptr;
-  /*cpu_set_t cpuset; 
-  int cpu = s->tid;
+  cpu_set_t cpuset; 
+  int cpu = s->tid + 1;
   CPU_ZERO(&cpuset);       //clears the cpuset
-  CPU_SET(cpu, &cpuset); */
-  //sched_setaffinity(0, sizeof(cpuset), &cpuset);
+  CPU_SET(cpu, &cpuset);
+  sched_setaffinity(0, sizeof(cpuset), &cpuset);
 
   int inside_max = s->inside_max;
   for(inside = 0; inside < inside_max; inside++){
@@ -135,11 +137,11 @@ void *spmv_diaii_wrapper(void *ptr){
 void *spmv_ellii_wrapper(void *ptr){
   int inside;
   spmv_ellii_struct *s = (spmv_ellii_struct *) ptr;
-  /*cpu_set_t cpuset; 
-  int cpu = s->tid;
+  cpu_set_t cpuset; 
+  int cpu = s->tid + 1;
   CPU_ZERO(&cpuset);       //clears the cpuset
   CPU_SET(cpu, &cpuset);
-  sched_setaffinity(0, sizeof(cpuset), &cpuset);*/
+  sched_setaffinity(0, sizeof(cpuset), &cpuset);
 
   int inside_max = s->inside_max;
   for(inside = 0; inside < inside_max; inside++){
@@ -161,7 +163,7 @@ int main(int argc, char* argv[])
   double v;
   clock_t start, stop;
   double sum = 0, mean = 0, sd = 0, variance = 0;
-  int inside = 0, inside_max = 100000, outer_max = OUTER_MAX;
+  int inside = 0, inside_max = 1000000, outer_max = OUTER_MAX;
   double exec_arr[OUTER_MAX];
   int events[3] = {PAPI_L1_DCM, PAPI_L2_DCM, PAPI_L3_TCM}, ret, event_set=PAPI_NULL;
   long long values[3];
@@ -171,6 +173,14 @@ int main(int argc, char* argv[])
   pthread_attr_t attr;
   cpu_set_t cpus;
   pthread_attr_init(&attr);*/
+
+  //printf("The process id: %d\n", getpid());
+  //printf("The thread id: %d\n", syscall(__NR_gettid));
+
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);       //clears the cpuset
+  CPU_SET(0, &cpuset);     //initialize cpuset to 0x0
+  sched_setaffinity(0, sizeof(cpuset), &cpuset); //initialize main thread to P0
 
   if(argc < 4){
     fprintf(stderr, "Usage: %s [martix-market-filename] format_num num_workers\n", argv[0]);
@@ -204,7 +214,8 @@ int main(int argc, char* argv[])
   }
   ret = PAPI_add_events(event_set, events, 3);
   if(ret != PAPI_OK){
-    fprintf(stderr, "add event error\n");
+    fprintf(stderr, "hi add event error\n");
+    fprintf(stderr, "%d %s\n", ret, PAPI_strerror(ret));
     exit(1);
   }
 
@@ -333,6 +344,18 @@ int main(int argc, char* argv[])
           row[k] = r - 1;
           col[k]= c - 1;
           coo_val[k] = v;
+	  if(fpclassify(coo_val[k]) == FP_NAN){
+            fprintf(stderr,"bad value : nan\n");
+            exit(1);
+          }
+          if(fpclassify(coo_val[k]) == FP_INFINITE){
+            fprintf(stderr,"bad value : infinite\n");
+            exit(1);
+          }
+          if(fpclassify(coo_val[k]) == FP_SUBNORMAL){
+            fprintf(stderr,"bad value : subnormal\n");
+            coo_val[k] = 0.0;
+          }
           if(r == c){
             k++;
           }
@@ -340,6 +363,10 @@ int main(int argc, char* argv[])
             row[k+1] = col[k]; 
             col[k+1] = row[k];
             coo_val[k+1] = v;
+	    if(fpclassify(coo_val[k+1]) == FP_SUBNORMAL){
+              fprintf(stderr,"bad value : subnormal\n");
+              coo_val[k+1] = 0.0;
+            }
             k = k + 2;
           }
         }
@@ -371,6 +398,18 @@ int main(int argc, char* argv[])
           row[k] = r - 1;
           col[k]= c - 1;
           coo_val[k] = v;
+	  if(fpclassify(coo_val[k]) == FP_NAN){
+            fprintf(stderr,"bad value : nan\n");
+            exit(1);
+          }
+          if(fpclassify(coo_val[k]) == FP_INFINITE){
+            fprintf(stderr,"bad value : infinite\n");
+            exit(1);
+          }
+          if(fpclassify(coo_val[k]) == FP_SUBNORMAL){
+            fprintf(stderr,"bad value : subnormal\n");
+            coo_val[k] = 0.0;
+          }
           k++;
         }
       }
@@ -384,17 +423,17 @@ int main(int argc, char* argv[])
       }
     }
   }
+  quickSort(row, col, coo_val, 0, anz-1);
 
   if(anz > 1000000) inside_max = 1;
-  else if (anz > 100000) inside_max = 10;
-  else if (anz > 50000) inside_max = 50;
-  else if(anz > 10000) inside_max = 100;
-  else if(anz > 2000) inside_max = 1000;
-  else if(anz > 100) inside_max = 10000;
+  else if (anz > 100000) inside_max = 500;
+  else if (anz > 50000) inside_max = 1000;
+  else if(anz > 20000) inside_max = 5000;
+  else if(anz > 5000) inside_max = 10000;
+  else if(anz > 500) inside_max = 100000;
   //inside_max *= 6;
 
   pthread_t threads[num_workers];
-  quickSort(row, col, coo_val, 0, anz-1);
 
   if(atoi(argv[2]) == 1){
     spmv_coo_struct *s[num_workers];
@@ -534,7 +573,7 @@ int main(int argc, char* argv[])
     }
     for (i=0; i<outer_max; i++){
       zero_arr(N, y);
-      for(t = 0; t < num_workers; t++)
+      //for(t = 0; t < num_workers; t++)
         //zero_arr(N, s[t]->y);
       //start = clock();
       clock_gettime(clk_id, &start_tp);
@@ -580,9 +619,6 @@ int main(int argc, char* argv[])
     printf("L1 data cache misses is %lld\n", values[0]);
     printf("L2 data cache misses is %lld\n", values[1]);
     printf("L3 data cache misses is %lld\n", values[2]);
-    /*for(i = 0; i < N; i++){
-      printf("%.12lf\n", y[i]);
-    }*/
   }
   else if(atoi(argv[2]) == 3){
     coo_csr(anz, N, row, col, coo_val, row_ptr, colind, val);

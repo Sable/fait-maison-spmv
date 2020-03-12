@@ -9,7 +9,7 @@ typedef struct spmv_dia_struct{
   int start_row, end_row;
   int nd, stride, N;
   int len;
-  int inside_max;
+  int inner_max;
   int *offset;
   MYTYPE *data, *x, *y;
 }spmv_dia_struct;

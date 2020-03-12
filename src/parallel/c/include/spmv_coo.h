@@ -11,7 +11,7 @@ typedef struct spmv_coo_struct{
   int tid;
   int nz, N;
   int len;
-  int inside_max;
+  int inner_max;
   int *row, *col;
   MYTYPE *val, *x, *y;
 }spmv_coo_struct;

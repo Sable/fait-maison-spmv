@@ -133,7 +133,7 @@ void csr_dia(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **data
   *nd = num_diag;
   *stride = N;
   size_t size = (size_t)num_diag * *stride;
-  if(size > pow(2, 27) || (size/nnz) > 3){
+  if(size > pow(2, 27) || (float)size/nnz > 10){
     fprintf(stderr, "too large");
     exit(1);
   }
@@ -200,10 +200,10 @@ void csr_diaii(int *row_ptr, int *colind, MYTYPE *val, int **offset, MYTYPE **da
   *nd = num_diag;
   *stride = N;
   size_t size = (size_t)num_diag * *stride;
-  /*if(size > pow(2, 27) || (size/nnz) > 3){
+  if(size > pow(2, 27) || (float)size/nnz > 10){
     fprintf(stderr, "too large");
     exit(1);
-  }*/
+  }
 
   *offset = (int*)malloc(num_diag * sizeof(int));
   if(*offset == NULL){
@@ -259,7 +259,7 @@ void csr_ellii(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **d
   
   if(((size_t)N * max) > pow(2, 27) || (((size_t)N * max * 2)/nnz) > 10){
       fprintf(stderr, "too large");
-      exit(-1);
+      exit(1);
   }
 
   *data = (MYTYPE*)calloc((size_t)N * max, sizeof(MYTYPE));
@@ -273,11 +273,11 @@ void csr_ellii(int *row_ptr, int *colind, MYTYPE *val, int **indices, MYTYPE **d
     exit(1);
   }
 
-  /*for(i = 0; i < max; i++){
+  for(i = 0; i < max; i++){
     for(j = 0; j < N; j++){
       (*indices)[i*N+j] = -1;
     }
-  }*/
+  }
 
   for(i = 0; i < N; i++){
     k = 0;

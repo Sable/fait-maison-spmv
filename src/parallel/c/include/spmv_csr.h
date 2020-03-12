@@ -8,7 +8,7 @@ typedef struct spmv_csr_struct{
   int tid;
   int nz, N;
   int len;
-  int inside_max;
+  int inner_max;
   int *rowptr, *col;
   MYTYPE *val, *x, *y;
 }spmv_csr_struct;

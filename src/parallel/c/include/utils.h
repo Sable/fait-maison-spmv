@@ -2,8 +2,17 @@
 #define UTILS_H
 
 #include<stdio.h>
+#include <ctype.h> 
+#include<string.h>
+#include<stdlib.h>
+#include<math.h>
 #include "config.h"
+#include "mmio.h"
 
+int count_nnz(FILE *f);
+void static_nnz(int *row_ptr, int N, int nnz, int *row_start, int *row_end, int nw);
+int count_csr_partition_nnz(int *row_ptr, int nr);
+int string_compare(char *, char *);
 void sort_coo(int start, int end, int *array1, int *array2, MYTYPE *array3);
 void quickSort(int arr[], int arr2[], MYTYPE arr3[], int low, int high);
 void init_arr(int N, MYTYPE* a);

@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "colors": "^1.1.2",
-    "express": "^4.16.2",
+    "express": "^4.17.3",
     "http-server": "^0.11.1",
     "shelljs": "^0.8.0",
     "yargs": "^10.1.1"
